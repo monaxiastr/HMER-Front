@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- The above 4 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+    <!-- Title -->
+    <title>在线识别</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="img/core-img/favicon.svg">
+
+    <!-- Core Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- ##### Preloader ##### -->
+    <div id="preloader">
+        <i class="circle-preloader"></i>
+    </div>
+
+    <!-- ##### Header Area Start ##### -->
+    <header class="header-area">
+
+        <!-- Top Header Area -->
+        <div class="top-header">
+            <div class="container h-100">
+                <div class="row h-100">
+                    <div class="col-12 h-100">
+                        <div class="top-header-content h-100 d-flex align-items-center justify-content-between">
+                            <!-- Top Headline -->
+                            <div class="top-headline">
+                                <p>欢迎使用 <span>手写公式识别</span></p>
+                            </div>
+                            <!-- Top Login btn -->
+                            <div class="login-faq-earn-money">
+                                <a href="login.html">登录 | 注册</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navbar Area -->
+        <div class="cryptos-main-menu">
+            <div class="classy-nav-container breakpoint-off">
+                <div class="container">
+                    <!-- Menu -->
+                    <nav class="classy-navbar justify-content-between" id="cryptosNav">
+
+                        <!-- Logo -->
+                        <a class="nav-brand" style="margin-left: 45px;" href="index.html"><img src="img/core-img/logo.png" alt=""></a>
+
+                        <!-- Navbar Toggler -->
+                        <div class="classy-navbar-toggler">
+                            <span class="navbarToggler"><span></span><span></span><span></span></span>
+                        </div>
+
+                        <!-- Menu -->
+                        <div class="classy-menu">
+
+                            <!-- close btn -->
+                            <div class="classycloseIcon">
+                                <div class="cross-wrap"><span class="top"></span><span class="bottom"></span></div>
+                            </div>
+
+                            <!-- Nav Start -->
+                            <div class="classynav" style="margin-right: 20px; padding: 30px;">
+                                <ul>
+                                    <li><a href="index.html">主页</a></li>
+                                    <li><a href="#">在线识别</a></li>
+                                    <li><a href="#">个人中心</a></li>
+                                    <li><a href="#">关于我们</a></li>
+                                </ul>
+
+                                <!-- Newsletter Form -->
+                                <div class="header-newsletter-form">
+                                    <form action="#" method="post">
+                                        <input type="email" name="email" id="email" placeholder="Newsletter">
+                                        <button type="submit">Subscribe</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- Nav End -->
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- ##### Header Area End ##### -->
+
+    <!-- ##### Recognize Area Start ##### -->
+    <div class="cryptos-feature-area">
+        <div class="container">
+            <div class="row g-4">
+
+                <!-- 左侧上传区域 -->
+                <div class="col-md-4">
+                    <div class="card border-1 shadow-sm"
+                        style="background-color: #ffffff; margin-top: 30px; margin-bottom: 80px;">
+                        <div class="card-header text-white text-center" style="background-color: #ecb903;">上传手写图片</div>
+                        <div class="card-body">
+
+                            <!-- 上传框：支持点击与拖拽 -->
+                            <div id="dropArea" class="upload-dropzone mb-3 text-center">
+                                <input type="file" id="imageUpload" accept="image/*">
+                                <div class="upload-icon mb-2">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="#ecb903" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M19.35 10.04A7.492 7.492 0 0012 4a7.5 7.5 0 00-7.48 7.19A5.502 5.502 0 006.5 21h13a4.5 4.5 0 00-.15-10.96zM13 12v4h-2v-4H8l4-4 4 4h-3z"/>
+                                    </svg>
+                                </div>
+                                <p class="mb-0">点击或拖拽图片到此处上传</p>
+                            </div>
+
+                            <button type="submit" class="btn cryptos-btn btn-3 w-100 mb-2" style="font-size: medium;" id="uploadButton">开始识别</button>
+                            
+
+                            <div class="mt-4 text-center">
+                                <img id="previewImage" src="#" alt="预览图片" class="img-thumbnail d-none"
+                                    style="max-height: 300px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧识别结果 -->
+                <div class="col-md-8">
+                    <div class="card border-1 shadow-sm mb-4"
+                        style="background-color: #ffffff; margin-top: 30px; margin-bottom: 80px;">
+                        <div class="card-header text-white text-center" style="background-color: #ecb903;">识别结果（公式预览）
+                        </div>
+                        <div class="card-body">
+                            <div id="mathPreview" class="fs-4 text-center text-dark py-3"
+                                style="min-height: 100px; border: 1px dashed #000000; border-radius: 8px; font-size: x-large;">
+                                <!-- 请上传图片以识别 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-1 shadow-sm" style="background-color: #ffffff; margin-bottom: 40px;">
+                        <div class="card-header text-white text-center" style="background-color: #000000;">LaTeX 源码（可编辑）
+                        </div>
+                        <div class="card-body">
+                            <textarea id="latexCode" class="form-control mb-3" rows="5"
+                                placeholder="在这里编辑 LaTeX 代码..."></textarea>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button class="btn btn-outline-secondary" style="margin-right: 10px;" onclick="renderLatex()">渲染公式</button>
+                                <button class="btn btn-outline-primary" onclick="copyLatex()">复制代码</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- ##### Recognize Area End ##### -->
+
+    <!-- ##### Footer Area Start ##### -->
+    <footer class="footer-area">
+        <!-- Bottom Footer Area -->
+        <div class="bottom-footer-area">
+            <div class="container h-100">
+                <div class="row h-100 align-items-center justify-content-center">
+                    <div class="col-12">
+                        <p>Copyright &copy;
+                            <script>document.write(new Date().getFullYear());</script> All rights reserved
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ##### Footer Area End ##### -->
+
+    <!-- ##### All Javascript Script ##### -->
+    <!-- jQuery-2.2.4 js -->
+    <script src="js/jquery/jquery-2.2.4.min.js"></script>
+    <!-- Popper js -->
+    <script src="js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap js -->
+    <script src="js/bootstrap/bootstrap.min.js"></script>
+    <!-- All Plugins js -->
+    <script src="js/plugins/plugins.js"></script>
+    <!-- Active js -->
+    <script src="js/active.js"></script>
+    <!-- MathJax js -->
+    <script src="js/mathjax/es5/tex-mml-chtml.js"></script>
+    <!-- Recognize Logic js -->
+    <script src="js/recognize.js"></script>
+</body>
+
+</html>
