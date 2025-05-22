@@ -17,19 +17,20 @@
     <!-- Core Stylesheet -->
     <link rel="stylesheet" href="css/style-login.css" type="text/css" media="all" />
     <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" media="all">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <!-- ##### Form Section Start ##### -->
     <section class="w3l-hotair-form">
-        <h1>欢迎使用手写公式识别！</h1>
+        <h1>欢迎使用手写公式识别系统！</h1>
         <div class="container">
             <!-- Form Start -->
             <div class="workinghny-form-grid">
                 <div class="main-hotair">
                     <div class="content-wthree">
                         <h2>Log In</h2>
-                        <form action="#" method="post">
+                        <form action="#" method="post" id="loginForm">
                             <input type="text" class="text" name="text" placeholder="User Name" required="" autofocus>
                             <input type="password" class="password" name="password" placeholder="User Password" required="" autofocus>
                             <button class="btn" type="submit">Log In</button>
@@ -48,6 +49,40 @@
         </div>
     </section>
     <!-- ##### Form Section End ##### -->
+
+    <!-- ##### Alert Modal Start ##### -->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="alertModalTitle">标题</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="alertModalBody">
+                    内容
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ##### Alert Modal End ##### -->
+
+    <!-- ##### All Javascript Script ##### -->
+    <!-- jQuery-2.2.4 js -->
+    <script src="js/jquery/jquery-2.2.4.min.js"></script>
+    <!-- Popper js -->
+    <script src="js/bootstrap/popper.min.js"></script>
+    <!-- Bootstrap js -->
+    <script src="js/bootstrap/bootstrap.min.js"></script>
+
+    <!-- Tools js -->
+    <script src="js/tools.js"></script>
+    <!-- Login js -->
+    <script src="js/login.js"></script>
 </body>
 
 </html>

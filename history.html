@@ -9,7 +9,7 @@
     <!-- The above 4 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
     <!-- Title -->
-    <title>在线识别</title>
+    <title>历史记录</title>
 
     <!-- Favicon -->
     <link rel="icon" href="img/core-img/favicon.svg">
@@ -89,71 +89,12 @@
     </header>
     <!-- ##### Header Area End ##### -->
 
-    <!-- ##### Recognize Area Start ##### -->
-    <div class="cryptos-feature-area">
-        <div class="container">
-            <div class="row g-4">
-
-                <!-- 左侧上传区域 -->
-                <div class="col-md-4">
-                    <div class="card border-1 shadow-sm"
-                        style="background-color: #ffffff; margin-top: 30px; margin-bottom: 80px;">
-                        <div class="card-header text-white text-center" style="background-color: #ecb903;">上传手写图片</div>
-                        <div class="card-body">
-
-                            <!-- 上传框：支持点击与拖拽 -->
-                            <div id="dropArea" class="upload-dropzone mb-3 text-center">
-                                <input type="file" id="imageUpload" accept="image/*">
-                                <div class="upload-icon mb-2">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="#ecb903" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M19.35 10.04A7.492 7.492 0 0012 4a7.5 7.5 0 00-7.48 7.19A5.502 5.502 0 006.5 21h13a4.5 4.5 0 00-.15-10.96zM13 12v4h-2v-4H8l4-4 4 4h-3z"/>
-                                    </svg>
-                                </div>
-                                <p class="mb-0">点击或拖拽图片到此处上传</p>
-                            </div>
-
-                            <button type="submit" class="btn cryptos-btn btn-3 w-100 mb-2" style="font-size: medium;" id="uploadButton">开始识别</button>
-                            
-
-                            <div class="mt-4 text-center">
-                                <img id="previewImage" src="#" alt="预览图片" class="img-thumbnail d-none"
-                                    style="max-height: 300px;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 右侧识别结果 -->
-                <div class="col-md-8">
-                    <div class="card border-1 shadow-sm mb-4"
-                        style="background-color: #ffffff; margin-top: 30px; margin-bottom: 80px;">
-                        <div class="card-header text-white text-center" style="background-color: #ecb903;">识别结果（公式预览）
-                        </div>
-                        <div class="card-body" style="text-align: right;">
-                            <div id="mathPreview" class="fs-4 text-center text-dark py-3"
-                                style="min-height: 100px; border: 1px dashed #000000; border-radius: 8px; font-size: x-large;"></div>
-                            <button id="downloadButton" class="btn btn-outline-secondary" style="margin-top: 15px;">下载图片</button>
-                        </div>
-                    </div>
-
-                    <div class="card border-1 shadow-sm" style="background-color: #ffffff; margin-bottom: 40px;">
-                        <div class="card-header text-white text-center" style="background-color: #000000;">LaTeX 源码（可编辑）
-                        </div>
-                        <div class="card-body">
-                            <textarea id="latexCode" class="form-control mb-3" rows="5"
-                                placeholder="在这里编辑 LaTeX 代码..."></textarea>
-                            <div class="d-flex justify-content-end gap-2">
-                                <button class="btn btn-outline-secondary" style="margin-right: 10px;" onclick="saveHistory()">保存到历史记录</button>
-                                <button class="btn btn-outline-primary" onclick="copyLatex()">复制代码</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+    <!-- ##### History Area Start ##### -->
+    <div class="container mt-5">
+        <h2 class="mb-4">历史记录</h2>
+        <div id="historyList" class="row"></div>
     </div>
-    <!-- ##### Recognize Area End ##### -->
+    <!-- ##### History Area End ##### -->
 
     <!-- ##### Alert Modal Start ##### -->
     <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModalTitle" aria-hidden="true">
@@ -211,8 +152,8 @@
 
     <!-- Tools js -->
     <script src="js/tools.js"></script>
-    <!-- Recognize js -->
-    <script src="js/recognize.js"></script>
+    <!-- History js -->
+    <script src="js/history.js"></script>
 </body>
 
 </html>
