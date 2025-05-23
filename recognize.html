@@ -93,14 +93,13 @@
     <div class="cryptos-feature-area">
         <div class="container">
             <div class="row g-4">
-
-                <!-- 左侧上传区域 -->
-                <div class="col-md-4">
-                    <div class="card border-1 shadow-sm"
-                        style="background-color: #ffffff; margin-top: 30px; margin-bottom: 80px;">
+                <!-- 左侧上传和手写板区域 -->
+                <div class="col-md-4" id="pictureArea">
+                    
+                    <!-- 上传区域 -->
+                    <div class="card border-1 shadow-sm" id="uploadArea" style="background-color: #ffffff; margin-top: 30px; margin-bottom: 30px;">
                         <div class="card-header text-white text-center" style="background-color: #ecb903;">上传手写图片</div>
                         <div class="card-body">
-
                             <!-- 上传框：支持点击与拖拽 -->
                             <div id="dropArea" class="upload-dropzone mb-3 text-center">
                                 <input type="file" id="imageUpload" accept="image/*">
@@ -112,15 +111,39 @@
                                 <p class="mb-0">点击或拖拽图片到此处上传</p>
                             </div>
 
-                            <button type="submit" class="btn cryptos-btn btn-3 w-100 mb-2" style="font-size: medium;" id="uploadButton">开始识别</button>
-                            
-
-                            <div class="mt-4 text-center">
-                                <img id="previewImage" src="#" alt="预览图片" class="img-thumbnail d-none"
-                                    style="max-height: 300px;">
-                            </div>
                         </div>
                     </div>
+
+                    <!-- 手写板区域 -->
+                    <div class="card border-1 shadow-sm d-none" id="drawingArea" style="background-color: #ffffff; margin-top: 30px; margin-bottom: 30px;">
+                        <div class="card-header text-white text-center" style="background-color: #ecb903;">手写绘制板</div>
+                        <canvas id="canvas" style="border: 1px solid #000000;">浏览器不支持canvas</canvas>
+                        <div class="row justify-content-center" style="margin-top: 10px;">
+                            <button class="btn btn-outline-secondary" id="rubberButton">橡皮擦</button>
+                            <button class="btn btn-outline-secondary" id="clearCanvasButton">清除</button>
+                        </div>
+                        <div class="row justify-content-center" style="margin-top: 10px;">
+                            <p>选择画笔大小：</p>
+                            <button class="btn" id="penWidth4pxButton">4PX</button>
+                            <button class="btn" id="penWidth8pxButton">8PX</button>
+                            <button class="btn" id="penWidth12pxButton">12PX</button>
+                        </div>
+                        <div class="row justify-content-center" style="margin-top: 10px;">
+                            <p>输出画板内容到下面的图片：</p>
+                            <button class="btn cryptos-btn btn-3" id="createImageButton">EXPORT</button>
+                        </div>
+                        <img id="image_png">
+                    </div>
+
+                    <!-- 切换按钮 -->
+                    <div class="col-md-12 text-center mb-4">
+                        <button class="btn cryptos-btn btn-3" id="toggleButton">切换到手写板</button>
+                    </div>
+                
+                    <div class="mt-4 text-center" style="margin-bottom: 30px;">
+                        <img id="previewImage" src="#" alt="预览图片" class="img-thumbnail d-none" style="max-height: 300px;">
+                    </div>
+                    <button type="submit" class="btn cryptos-btn btn-3 w-100 mb-2" style="font-size: medium;" id="uploadButton">开始识别</button>
                 </div>
 
                 <!-- 右侧识别结果 -->
@@ -143,9 +166,19 @@
                             <textarea id="latexCode" class="form-control mb-3" rows="5"
                                 placeholder="在这里编辑 LaTeX 代码..."></textarea>
                             <div class="d-flex justify-content-end gap-2">
+                                <button class="btn btn-outline-secondary" style="margin-right: 10px;" id="aiAnalyzeButton">AI分析公式</button>
                                 <button class="btn btn-outline-secondary" style="margin-right: 10px;" onclick="saveHistory()">保存到历史记录</button>
                                 <button class="btn btn-outline-primary" onclick="copyLatex()">复制代码</button>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-1 shadow-sm mb-4"
+                        style="background-color: #ffffff; margin-top: 30px; margin-bottom: 80px;">
+                        <div class="card-header text-white text-center" style="background-color: #ecb903;">AI分析结果</div>
+                        <div class="card-body" style="text-align: right;">
+                            <div id="aiAnalyzeResult" class="fs-4 text-center text-dark py-3"
+                                style="min-height: 100px; border: 1px dashed #000000; border-radius: 8px; font-size: x-large;"></div>
                         </div>
                     </div>
                 </div>

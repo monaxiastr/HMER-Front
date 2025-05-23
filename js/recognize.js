@@ -1,15 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
     const basePath = 'http://localhost:5000';
     const recognizePath = basePath + '/api/recognize';
+    const aiAnalyzePath = basePath + '/api/chat';
 
     const imageInput = document.getElementById('imageUpload');
     const previewImage = document.getElementById('previewImage');
     const dropArea = document.getElementById('dropArea');
     const latexCode = document.getElementById('latexCode');
     const mathPreview = document.getElementById('mathPreview');
+    const toggleButton = document.getElementById('toggleButton');
     const uploadButton = document.getElementById('uploadButton');
     const downloadButton = document.getElementById('downloadButton');
     const loginLink = document.getElementById('loginLink');
+    const canvas = document.getElementById('canvas');
+    const rubberButton = document.getElementById('rubberButton');
+    const clearCanvasButton = document.getElementById('clearCanvasButton');
+    const aiAnalyzeResult = document.getElementById('aiAnalyzeResult');
+
+    var pictureFile = null;
+    var penClick = false;
+    var startAxisX = 0;
+    var startAxisY = 0;
+    var penWidth = 4;
+    var isRubber = false;
 
     // 顶部导航栏信息
     const username = localStorage.getItem('username');
@@ -20,14 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 图片预览功能
     imageInput.addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (file) {
+        pictureFile = e.target.files[0];
+        if (pictureFile) {
             const reader = new FileReader();
             reader.onload = function (e) {
                 previewImage.src = e.target.result;
                 previewImage.classList.remove('d-none');
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(pictureFile);
         }
     });
 
@@ -50,13 +63,29 @@ document.addEventListener('DOMContentLoaded', () => {
         showAlertModal('提示', 'LaTeX 代码已复制');
     }
 
+    // 切换上传/手写板
+    toggleButton.addEventListener('click', function() {
+        var uploadArea = document.getElementById('uploadArea');
+        var drawingArea = document.getElementById('drawingArea');
+        
+        if (uploadArea.classList.contains('d-none')) {
+            uploadArea.classList.remove('d-none');
+            drawingArea.classList.add('d-none');
+            toggleButton.textContent = '切换到手写板';
+
+        } else {
+            uploadArea.classList.add('d-none');
+            drawingArea.classList.remove('d-none');
+            toggleButton.textContent = '切换到上传图片';
+        }
+    });
+
     // 上传识别按钮
     uploadButton.addEventListener('click', async function (e) {
         e.preventDefault();
 
-        const file = imageInput.files[0];
-        if (!file) {
-            showAlertModal('提示', '请先选择或拖曳图片上传');
+        if (!pictureFile) {
+            showAlertModal('提示', '请先上传图片/在手写板中绘制公式！');
             return;
         }
 
@@ -70,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', pictureFile);
 
         fetch(recognizePath, {
             method: 'POST',
@@ -130,6 +159,130 @@ document.addEventListener('DOMContentLoaded', () => {
             const changeEvent = new Event('change');
             imageInput.dispatchEvent(changeEvent);
         }
+    });
+
+    document.getElementById('aiAnalyzeButton').addEventListener('click', async function (e) {
+        e.preventDefault();
+        const code = latexCode.value.trim();
+        if (!code) {
+            showAlertModal('提示', '请先上传图片进行识别！');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('message', code + '这个公式可能有什么用？');
+
+        fetch(aiAnalyzePath, {
+            method: 'POST',
+            body: formData
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+                showAlertModal('提示', '分析失败：服务器错误。');
+                return;
+            }
+            aiAnalyzeResult.textContent = data.response;
+        })
+        .catch(error => {
+            console.error('网络出错:', error);
+            showAlertModal('提示', '网络错误，请检查网络连接或稍后再试。');
+        });
+    });
+
+    // 橡皮擦切换功能
+    rubberButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        isRubber = !isRubber;
+        if (isRubber) {
+            rubberButton.style.backgroundColor = '#000000';
+        } else {
+            rubberButton.style.backgroundColor = '#ffffff';
+        }
+    });
+
+    clearCanvasButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    document.getElementById('penWidth4pxButton').addEventListener('click', function (e) {
+        e.preventDefault();
+        penWidth = 4;
+    });
+
+    document.getElementById('penWidth8pxButton').addEventListener('click', function (e) {
+        e.preventDefault();
+        penWidth = 8;
+    });
+
+    document.getElementById('penWidth12pxButton').addEventListener('click', function (e) {
+        e.preventDefault();
+        penWidth = 12;
+    });
+
+    document.getElementById('createImageButton').addEventListener('click', async function (e) {
+        e.preventDefault();
+        // 将 canvas 内容转换为数据URL
+        const canvas = document.getElementById('canvas');
+        const dataURL = canvas.toDataURL('image/png');
+
+        // 使用 fetch 从数据URL下载图像数据
+        const response = await fetch(dataURL);
+        const blob = await response.blob();
+
+        // 创建 File 对象
+        pictureFile = new File([blob], 'created_image.png', { type: 'image/png' });
+
+        // 可选：将创建的图像显示在预览区域
+        previewImage.src = dataURL;
+        previewImage.classList.remove('d-none');
+    });
+
+    canvas.addEventListener("mousemove", function (e) {
+        if (!penClick) return;
+        var ctx = canvas.getContext("2d");
+        var rect = canvas.getBoundingClientRect();
+        const stopAxisX = (e.pageX - rect.left) * (canvas.width / rect.width);
+        const stopAxisY = (e.pageY - rect.top) * (canvas.height / rect.height);
+        if (isRubber) {
+            // 橡皮擦功能
+            ctx.beginPath();
+            ctx.arc(stopAxisX, stopAxisY, penWidth / 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff'; // 假设背景色为白色
+            ctx.fill();
+        } else {
+            // 画笔功能
+            ctx.beginPath();
+            ctx.moveTo(startAxisX, startAxisY);
+            ctx.lineTo(stopAxisX, stopAxisY);
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = penWidth;
+            ctx.lineCap = "round";
+            ctx.stroke();
+        }
+
+        startAxisX = stopAxisX;
+        startAxisY = stopAxisY;
+    });
+
+    canvas.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        penClick = true;
+        const rect = canvas.getBoundingClientRect();
+        startAxisX = (e.pageX - rect.left) * (canvas.width / rect.width);
+        startAxisY = (e.pageY - rect.top) * (canvas.height / rect.height);
+    });
+
+    canvas.addEventListener("mouseup", function (e) {
+        e.preventDefault();
+        penClick = false;
+    });
+
+    canvas.addEventListener("mouseout", function (e) {
+        e.preventDefault();
+        penClick = false;
     });
 
     // 下载图片
