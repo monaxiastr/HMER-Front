@@ -163,18 +163,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('aiAnalyzeButton').addEventListener('click', async function (e) {
         e.preventDefault();
-        const code = latexCode.value.trim();
+        const code = latexCode.value;
+        console.log(code);
         if (!code) {
             showAlertModal('提示', '请先上传图片进行识别！');
             return;
         }
 
-        const formData = new FormData();
-        formData.append('message', code + '这个公式可能有什么用？');
+        aiAnalyzeResult.textContent = '正在分析...';
 
         fetch(aiAnalyzePath, {
             method: 'POST',
-            body: formData
+            headers: {'Content-Type': 'application/json' },
+            body: JSON.stringify({'message': `${code}$这个公式有什么用?`})
         })
         .then(async response => {
             const data = await response.json();
@@ -222,10 +223,22 @@ document.addEventListener('DOMContentLoaded', () => {
         penWidth = 12;
     });
 
+    function isCanvasBlank(canvas) {
+        var blank = document.createElement('canvas');
+        blank.width = canvas.width;
+        blank.height = canvas.height;
+
+        return canvas.toDataURL() == blank.toDataURL();
+    }
+
     document.getElementById('createImageButton').addEventListener('click', async function (e) {
         e.preventDefault();
+        // 检查canvas是否为空
+        if (isCanvasBlank(canvas)) {
+            showAlertModal('提示', '请在画布上绘制公式！');
+            return;
+        }
         // 将 canvas 内容转换为数据URL
-        const canvas = document.getElementById('canvas');
         const dataURL = canvas.toDataURL('image/png');
 
         // 使用 fetch 从数据URL下载图像数据
@@ -240,12 +253,32 @@ document.addEventListener('DOMContentLoaded', () => {
         previewImage.classList.remove('d-none');
     });
 
+    function getPosition(e) {
+        const rect = canvas.getBoundingClientRect(); // 获取canvas相对于视口的位置
+        let x, y;
+        if (e.touches && e.touches.length) {
+            x = e.touches[0].clientX - rect.left;
+            y = e.touches[0].clientY - rect.top;
+        } else {
+            x = e.clientX - rect.left;
+            y = e.clientY - rect.top;
+        }
+        // 适配屏幕缩放
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        x = (x - window.scrollX) * scaleX;
+        y = (y - window.scrollY) * scaleY;
+        console.log(x, y);
+        return { x, y };
+    }
+
     canvas.addEventListener("mousemove", function (e) {
+        e.preventDefault();
         if (!penClick) return;
         var ctx = canvas.getContext("2d");
-        var rect = canvas.getBoundingClientRect();
-        const stopAxisX = (e.pageX - rect.left) * (canvas.width / rect.width);
-        const stopAxisY = (e.pageY - rect.top) * (canvas.height / rect.height);
+        const {x, y} = getPosition(e);
+        const stopAxisX = x;
+        const stopAxisY = y;
         if (isRubber) {
             // 橡皮擦功能
             ctx.beginPath();
@@ -267,12 +300,13 @@ document.addEventListener('DOMContentLoaded', () => {
         startAxisY = stopAxisY;
     });
 
+
     canvas.addEventListener("mousedown", function (e) {
         e.preventDefault();
         penClick = true;
-        const rect = canvas.getBoundingClientRect();
-        startAxisX = (e.pageX - rect.left) * (canvas.width / rect.width);
-        startAxisY = (e.pageY - rect.top) * (canvas.height / rect.height);
+        const {x, y} = getPosition(e);
+        startAxisX = x;
+        startAxisY = y;
     });
 
     canvas.addEventListener("mouseup", function (e) {
