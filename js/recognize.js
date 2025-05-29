@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveHistoryBtn.addEventListener('click', async function (e) {
         e.preventDefault();
 
-        const file = imageInput.files[0];
+        const file = pictureFile;
         if (!file) {
             showAlertModal('提示', '请先选择或拖曳图片上传');
             return;
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dt = e.dataTransfer;
         const files = dt.files;
         if (files.length > 0) {
-            imageInput.files = files;
+            pictureFile = files[0];
             const changeEvent = new Event('change');
             imageInput.dispatchEvent(changeEvent);
         }
