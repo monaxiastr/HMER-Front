@@ -23,9 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiAnalyzeResult = document.getElementById('aiAnalyzeResult');
 
     var pictureFile = null;
-    var penClick = false;
-    var startAxisX = 0;
-    var startAxisY = 0;
     var penWidth = 4;
     var isRubber = false;
 
@@ -290,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(aiAnalyzePath, {
             method: 'POST',
             headers: {'Content-Type': 'application/json' },
-            body: JSON.stringify({'message': `${code}$这个公式有什么用?`})
+            body: JSON.stringify({'message': `${code}$这个公式有什么用？请用150字以内的篇幅回答`})
         })
         .then(async response => {
             const data = await response.json();
@@ -368,70 +365,57 @@ document.addEventListener('DOMContentLoaded', () => {
         previewImage.classList.remove('d-none');
     });
 
-    function getPosition(e) {
-        const rect = canvas.getBoundingClientRect(); // 获取canvas相对于视口的位置
-        let x, y;
-        if (e.touches && e.touches.length) {
-            x = e.touches[0].clientX - rect.left;
-            y = e.touches[0].clientY - rect.top;
-        } else {
-            x = e.clientX - rect.left;
-            y = e.clientY - rect.top;
-        }
-        // 适配屏幕缩放
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        x = (x - window.scrollX) * scaleX;
-        y = (y - window.scrollY) * scaleY;
-        console.log(x, y);
-        return { x, y };
+    const getMousePosition = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;    // device pixel ratio
+        const scaleY = canvas.height / rect.height;  // device pixel ratio
+
+        return {
+            offsetX: (e.clientX - rect.left) * scaleX,
+            offsetY: (e.clientY - rect.top) * scaleY
+        };
     }
 
-    canvas.addEventListener("mousemove", function (e) {
+    const mousemove = (e) => {
         e.preventDefault();
-        if (!penClick) return;
         var ctx = canvas.getContext("2d");
-        const {x, y} = getPosition(e);
-        const stopAxisX = x;
-        const stopAxisY = y;
-        if (isRubber) {
-            // 橡皮擦功能
-            ctx.beginPath();
-            ctx.arc(stopAxisX, stopAxisY, penWidth / 2, 0, Math.PI * 2);
-            ctx.fillStyle = '#ffffff'; // 假设背景色为白色
-            ctx.fill();
-        } else {
-            // 画笔功能
-            ctx.beginPath();
-            ctx.moveTo(startAxisX, startAxisY);
-            ctx.lineTo(stopAxisX, stopAxisY);
+        // 画笔功能
+        const { offsetX, offsetY } = getMousePosition(e);
+        ctx.lineTo(offsetX, offsetY);
+        if (isRubber)
+            ctx.strokeStyle = "#ffffff";
+        else
             ctx.strokeStyle = "#000000";
-            ctx.lineWidth = penWidth;
-            ctx.lineCap = "round";
-            ctx.stroke();
-        }
+        ctx.lineWidth = penWidth;
+        ctx.lineCap = "round";
+        ctx.stroke();
+    }
 
-        startAxisX = stopAxisX;
-        startAxisY = stopAxisY;
-    });
+    const mouseenter = (e) => {
+        // 从外部回到画布，改变上一点的位置，继续书写
+        var ctx = canvas.getContext("2d");
+        const { offsetX, offsetY } = getMousePosition(e);
+        ctx.moveTo(offsetX, offsetY)
+    }
 
+    const mouseup = (e) => {
+        e.preventDefault();
+        var ctx = canvas.getContext("2d");
+        ctx.closePath();
+        canvas.removeEventListener('mousemove', mousemove);
+        document.removeEventListener('mouseup', mouseup);
+        canvas.removeEventListener('mouseenter', mouseenter);
+    }
 
     canvas.addEventListener("mousedown", function (e) {
         e.preventDefault();
-        penClick = true;
-        const {x, y} = getPosition(e);
-        startAxisX = x;
-        startAxisY = y;
-    });
-
-    canvas.addEventListener("mouseup", function (e) {
-        e.preventDefault();
-        penClick = false;
-    });
-
-    canvas.addEventListener("mouseout", function (e) {
-        e.preventDefault();
-        penClick = false;
+        var ctx = canvas.getContext("2d");
+        ctx.beginPath();
+        const { offsetX, offsetY } = getMousePosition(e);
+        ctx.moveTo(offsetX, offsetY);
+        canvas.addEventListener('mousemove', mousemove);
+        document.addEventListener('mouseup', mouseup);
+        canvas.addEventListener('mouseenter', mouseenter);
     });
 
     // 下载图片
