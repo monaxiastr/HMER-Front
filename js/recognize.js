@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const basePath = 'http://localhost:5000';
     const recognizePath = basePath + '/api/recognize';
+    const verifyLatexPath = basePath + '/api/verify-latex';
+    const saveHistoryPath = basePath + '/api/save-recognition';
     const aiAnalyzePath = basePath + '/api/chat';
 
     const imageInput = document.getElementById('imageUpload');
@@ -8,9 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropArea = document.getElementById('dropArea');
     const latexCode = document.getElementById('latexCode');
     const mathPreview = document.getElementById('mathPreview');
+    const verificationStatus = document.getElementById('verificationStatus');
+    const errorMessage = document.getElementById('errorMessage');
     const toggleButton = document.getElementById('toggleButton');
     const uploadButton = document.getElementById('uploadButton');
     const downloadButton = document.getElementById('downloadButton');
+    const saveHistoryBtn = document.getElementById('saveHistoryBtn');
     const loginLink = document.getElementById('loginLink');
     const canvas = document.getElementById('canvas');
     const rubberButton = document.getElementById('rubberButton');
@@ -80,6 +85,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+
+    // 切换上传/手写板
+    toggleButton.addEventListener('click', function() {
+        var uploadArea = document.getElementById('uploadArea');
+        var drawingArea = document.getElementById('drawingArea');
+        
+        if (uploadArea.classList.contains('d-none')) {
+            uploadArea.classList.remove('d-none');
+            drawingArea.classList.add('d-none');
+            toggleButton.textContent = '切换到手写板';
+
+        } else {
+            uploadArea.classList.add('d-none');
+            drawingArea.classList.remove('d-none');
+            toggleButton.textContent = '切换到上传图片';
+        }
+    });
+
     // 上传识别按钮
     uploadButton.addEventListener('click', async function (e) {
         e.preventDefault();
@@ -126,6 +149,115 @@ document.addEventListener('DOMContentLoaded', () => {
             const recognized = data.recognized_expression;
             latexCode.value = recognized;
             await renderLatex();
+
+            // 验证 LaTeX 公式
+            const verifyResponse = await fetch(verifyLatexPath, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ latex: latexCode.value })
+                //body: JSON.stringify({ latex: '\\sqrt{x^^2+y^2}' })
+            });
+            const verifyData = await verifyResponse.json();
+
+            if (verifyData.valid) {
+                errorMessage.style.display = 'none';  // 隐藏错误气泡
+            } else {
+                verificationStatus.innerHTML = `
+                    <button id="errorBtn" class="btn btn-outline-danger" style="margin-top: 15px;">！错误信息</button>
+                `;
+                
+                const safeText = verifyData.error
+                    .replace(/^\s*\n/, '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\n/g, '<br>')
+                    .replace(/ /g, '&nbsp;');
+
+                const errorBtn = document.getElementById('errorBtn');
+                errorBtn.addEventListener('click', () => {
+                    errorMessage.innerHTML = `
+                        <div style="text-align: right;">
+                            <button id="closeMessageButton" style="color: black; background: transparent; border: none; font-size: 16px; cursor: pointer;">
+                                &times;
+                            </button>
+                        </div>${safeText}
+                    `;  // 显示错误信息
+                    if (!errorMessage.parentNode || errorMessage.parentNode !== document.body) {
+                        document.body.appendChild(errorMessage);
+                    }
+
+                    errorMessage.style.display = 'block';  // 显示浮动气泡
+
+                    const btnRect = errorBtn.getBoundingClientRect();
+                    const scrollY = window.scrollY || window.pageYOffset;
+                    const scrollX = window.scrollX || window.pageXOffset;
+                    errorMessage.style.top = (btnRect.bottom + scrollY + 5) + 'px';
+                    errorMessage.style.left = (btnRect.left + scrollX + btnRect.width/2) + 'px';
+                    errorMessage.style.transform = 'translateX(-50%)';
+                    
+                    const closeMessageBtn = document.getElementById('closeMessageButton');
+                    closeMessageBtn.addEventListener('click', () => {
+                        errorMessage.style.display = 'none';
+                    });
+                });
+            }
+        })
+        .catch(error => {
+            console.error('网络出错:', error);
+            showAlertModal('提示', '网络错误，请检查网络连接或稍后再试。');
+        });
+
+    });
+
+    // 保存历史记录按钮
+    saveHistoryBtn.addEventListener('click', async function (e) {
+        e.preventDefault();
+
+        const file = imageInput.files[0];
+        if (!file) {
+            showAlertModal('提示', '请先选择或拖曳图片上传');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showAlertModal('提示', '请先登录！\n3秒后跳转到登录页面...');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 3000);
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('recognized_expression', latexCode.value);
+
+        fetch(saveHistoryPath, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            body: formData
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (response.status === 401) {
+                showAlertModal('提示', '登录过期，请重新登录！\n跳转到登录页面...');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 3000);
+                return;
+            }
+
+            if (!response.ok) {
+                showAlertModal('提示', '保存失败：服务器错误。');
+                return;
+            }
+
+            showAlertModal('提示', '历史记录保存成功！');
         })
         .catch(error => {
             console.error('网络出错:', error);
@@ -161,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // AI 分析功能
     document.getElementById('aiAnalyzeButton').addEventListener('click', async function (e) {
         e.preventDefault();
         const code = latexCode.value;
@@ -331,24 +464,39 @@ document.addEventListener('DOMContentLoaded', () => {
         // 等待渲染完成
         await renderLatex();
 
-        // svg 转 png
-        // 1. 序列化 SVG
+        // 底层 SVG 上 <svg viewBox="x y width height"> 的尺寸
         const svgElement = mathPreview.querySelector('svg');
-        const serializer = new XMLSerializer();
-        const svgString = serializer.serializeToString(svgElement);
+        const width  = svgElement.clientWidth;
+        const height = svgElement.clientHeight;
 
-        // 2. 创建 Canvas，尺寸用 SVG 的 viewBox 或 getBBox 来设定
-        const bbox = svgElement.getBBox();
+        // 缩放倍数
+        const scale = 2;
+
+        // 新建 Canvas，并按 viewBox 尺寸 * scale 设置像素大小
         const canvas = document.createElement('canvas');
-        canvas.width  = Math.ceil(bbox.width);
-        canvas.height = Math.ceil(bbox.height);
+        canvas.width  = Math.ceil(width * scale);
+        canvas.height = Math.ceil(height * scale);
 
-        // 3. 用 Canvg 把 SVG 绘制到 Canvas
         const ctx = canvas.getContext('2d');
-        const v = await canvg.Canvg.from(ctx, svgString);
+        // 按比例放大上下文
+        ctx.scale(scale, scale);
+
+        // 确保有 namespace
+        if (!svgElement.getAttribute('xmlns')) {
+            svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        }
+
+        // 序列化 SVG
+        const serializer = new XMLSerializer();
+        const svgString  = serializer.serializeToString(svgElement);
+
+        // 用 Canvg 渲染
+        const v = await canvg.Canvg.from(ctx, svgString, {
+            ignoreDimensions: true,
+        });
         await v.render();
 
-        // 4. 导出为 Blob 并下载
+        // 导出为 Blob 并下载
         canvas.toBlob(blob => {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -361,6 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.removeChild(a);
         }, 'image/png');
     });
+
 });
 
 /*
