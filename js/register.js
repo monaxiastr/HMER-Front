@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const username = form.querySelector("input[name='text']").value.trim();
         const email = form.querySelector("input[name='email']").value.trim();
         const password = form.querySelector("input[name='password']").value.trim();
-        const confirmPassword = form.querySelector("input[name='confirmPassword']");
+        const confirmPassword = form.querySelector("input[name='confirmPassword']").value.trim();
 
         // 检查两次输入的密码
         if (password !== confirmPassword) {
