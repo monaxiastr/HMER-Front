@@ -85,24 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
-    // 切换上传/手写板
-    toggleButton.addEventListener('click', function() {
-        var uploadArea = document.getElementById('uploadArea');
-        var drawingArea = document.getElementById('drawingArea');
-        
-        if (uploadArea.classList.contains('d-none')) {
-            uploadArea.classList.remove('d-none');
-            drawingArea.classList.add('d-none');
-            toggleButton.textContent = '切换到手写板';
-
-        } else {
-            uploadArea.classList.add('d-none');
-            drawingArea.classList.remove('d-none');
-            toggleButton.textContent = '切换到上传图片';
-        }
-    });
-
     // 上传识别按钮
     uploadButton.addEventListener('click', async function (e) {
         e.preventDefault();
@@ -111,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showAlertModal('提示', '请先上传图片/在手写板中绘制公式！');
             return;
         }
+        console.log(pictureFile);
 
         const token = localStorage.getItem('token');
         if (!token) {
@@ -293,7 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // AI 分析功能
     document.getElementById('aiAnalyzeButton').addEventListener('click', async function (e) {
         e.preventDefault();
         const code = latexCode.value;
