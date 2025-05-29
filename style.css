@@ -1339,3 +1339,25 @@ textarea:focus {
   transform: scale(1.1);
   fill: #001e95; /* 拖入时颜色变化 */
 }
+
+.image-wrapper {
+    width: 100px;
+    height: 100px;
+    position: relative;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 36px;
+    color: #dc3545;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.delete-btn:hover {
+    transform: scale(1.2);
+}

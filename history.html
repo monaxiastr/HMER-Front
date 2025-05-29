@@ -90,9 +90,38 @@
     <!-- ##### Header Area End ##### -->
 
     <!-- ##### History Area Start ##### -->
-    <div class="container mt-5">
-        <h2 class="mb-4">历史记录</h2>
-        <div id="historyList" class="row"></div>
+    <div class="container">
+        <div class="card shadow-sm" style="margin-bottom: 50px;">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h4 class="mb-0">历史记录</h4>
+                <button id="refreshBtn" class="btn btn-outline-secondary btn-sm" title="刷新历史记录">
+                    🔄 刷新
+                </button>
+            </div>
+            <div id="historyList" class="card-body">
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div id="deleteModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">确认删除</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    您确定要删除该历史记录吗？
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-cancel" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger btn-confirm">确定</button>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- ##### History Area End ##### -->
 

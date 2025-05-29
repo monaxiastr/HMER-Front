@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showAlertModal('提示', '登录成功！3秒后跳转...');
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('username', data.user.username);
+                localStorage.setItem('email', data.user.email);
                 setTimeout(() => {
                     window.location.href = '/recognize.html';
                 }, 3000);
