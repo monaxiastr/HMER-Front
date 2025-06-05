@@ -55,7 +55,7 @@
                     <nav class="classy-navbar justify-content-between" id="cryptosNav">
 
                         <!-- Logo -->
-                        <a class="nav-brand" style="margin-left: 45px;" href="index.html"><img src="img/core-img/logo.png" alt=""></a>
+                        <a class="nav-brand" style="margin-left: 70px;" href="index.html"><img src="img/core-img/logo.png" alt=""></a>
 
                         <!-- Navbar Toggler -->
                         <div class="classy-navbar-toggler">
@@ -95,7 +95,7 @@
             <div class="card-header d-flex align-items-center justify-content-between">
                 <h4 class="mb-0">历史记录</h4>
                 <button id="refreshBtn" class="btn btn-outline-secondary btn-sm" title="刷新历史记录">
-                    🔄 刷新
+                    刷新
                 </button>
             </div>
             <div id="historyList" class="card-body">
@@ -123,6 +123,18 @@
             </div>
         </div>
     </div>
+
+    <!-- 图片预览模态框 -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-body text-center">
+                    <img id="previewImage" src="" alt="预览" class="img-fluid rounded shadow">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ##### History Area End ##### -->
 
     <!-- ##### Alert Modal Start ##### -->

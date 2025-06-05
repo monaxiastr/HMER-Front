@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const username = form.querySelector("input[name='text']").value.trim();
         const email = form.querySelector("input[name='email']").value.trim();
         const password = form.querySelector("input[name='password']").value.trim();
-        const confirmPassword = form.querySelector("input[name='confirmPassword']");
+        const confirmPassword = form.querySelector("input[name='confirmPassword']").value.trim();
 
         // 检查两次输入的密码
         if (password !== confirmPassword) {
@@ -33,8 +33,10 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(async response => {
             const data = await response.json();
             if (response.ok) {
-                showAlertModal('提示', '注册成功！即将跳转到登录页面...');
-                window.location.href = '/login.html';
+                showAlertModal('提示', '注册成功！即将跳转...');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1000);
             } else {
                 showAlertModal('提示', '注册失败，用户名已存在！');
             }

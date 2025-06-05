@@ -24,13 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(async response => {
             const data = await response.json();
             if (response.ok) {
-                showAlertModal('提示', '登录成功！3秒后跳转...');
+                showAlertModal('提示', '登录成功！即将跳转...');
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('username', data.user.username);
                 localStorage.setItem('email', data.user.email);
                 setTimeout(() => {
                     window.location.href = '/recognize.html';
-                }, 3000);
+                }, 1000);
             } else {
                 showAlertModal('提示', '登录失败：用户名或密码错误');
             }

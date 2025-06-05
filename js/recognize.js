@@ -18,14 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveHistoryBtn = document.getElementById('saveHistoryBtn');
     const loginLink = document.getElementById('loginLink');
     const canvas = document.getElementById('canvas');
-    const rubberButton = document.getElementById('rubberButton');
     const clearCanvasButton = document.getElementById('clearCanvasButton');
-    const aiAnalyzeResult = document.getElementById('aiAnalyzeResult');
+    const chatFloatWindow = document.getElementById('chatFloatWindow');
+    const aiAnalyzeSession = document.getElementById('aiAnalyzeSession');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const clearChatBtn = document.getElementById('clearChatBtn');
 
     var pictureFile = null;
-    var penClick = false;
-    var startAxisX = 0;
-    var startAxisY = 0;
     var penWidth = 4;
     var isRubber = false;
 
@@ -38,14 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 图片预览功能
     imageInput.addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (file) {
+        pictureFile = e.target.files[0];
+        if (pictureFile) {
             const reader = new FileReader();
             reader.onload = function (e) {
                 previewImage.src = e.target.result;
                 previewImage.classList.remove('d-none');
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(pictureFile);
         }
     });
 
@@ -68,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showAlertModal('提示', 'LaTeX 代码已复制');
     }
 
-
     // 切换上传/手写板
     toggleButton.addEventListener('click', function() {
         var uploadArea = document.getElementById('uploadArea');
@@ -90,23 +88,23 @@ document.addEventListener('DOMContentLoaded', () => {
     uploadButton.addEventListener('click', async function (e) {
         e.preventDefault();
 
-        const file = imageInput.files[0];
-        if (!file) {
-            showAlertModal('提示', '请先选择或拖曳图片上传');
+        if (!pictureFile) {
+            showAlertModal('提示', '请先上传图片/在手写板中绘制公式！');
             return;
         }
+        console.log(pictureFile);
 
         const token = localStorage.getItem('token');
         if (!token) {
-            showAlertModal('提示', '请先登录！\n3秒后跳转到登录页面...');
+            showAlertModal('提示', '请先登录！\n即将跳转到登录页面...');
             setTimeout(() => {
                 window.location.href = 'login.html';
-            }, 3000);
+            }, 1000);
             return;
         }
 
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', pictureFile);
 
         fetch(recognizePath, {
             method: 'POST',
@@ -118,10 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(async response => {
             const data = await response.json();
             if (response.status === 401) {
-                showAlertModal('提示', '登录过期，请重新登录！\n跳转到登录页面...');
+                showAlertModal('提示', '登录过期，请重新登录！\n即将跳转到登录页面...');
                 setTimeout(() => {
                     window.location.href = 'login.html';
-                }, 3000);
+                }, 1000);
                 return;
             }
 
@@ -200,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveHistoryBtn.addEventListener('click', async function (e) {
         e.preventDefault();
 
-        const file = imageInput.files[0];
+        const file = pictureFile;
         if (!file) {
             showAlertModal('提示', '请先选择或拖曳图片上传');
             return;
@@ -208,10 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const token = localStorage.getItem('token');
         if (!token) {
-            showAlertModal('提示', '请先登录！\n3秒后跳转到登录页面...');
+            showAlertModal('提示', '请先登录！\n即将跳转到登录页面...');
             setTimeout(() => {
                 window.location.href = 'login.html';
-            }, 3000);
+            }, 1000);
             return;
         }
 
@@ -229,10 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(async response => {
             const data = await response.json();
             if (response.status === 401) {
-                showAlertModal('提示', '登录过期，请重新登录！\n跳转到登录页面...');
+                showAlertModal('提示', '登录过期，请重新登录！\n即将跳转到登录页面...');
                 setTimeout(() => {
                     window.location.href = 'login.html';
-                }, 3000);
+                }, 1000);
                 return;
             }
 
@@ -271,28 +269,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const dt = e.dataTransfer;
         const files = dt.files;
         if (files.length > 0) {
-            imageInput.files = files;
+            pictureFile = files[0];
             const changeEvent = new Event('change');
             imageInput.dispatchEvent(changeEvent);
         }
     });
 
-    // AI 分析功能
-    document.getElementById('aiAnalyzeButton').addEventListener('click', async function (e) {
-        e.preventDefault();
-        const code = latexCode.value;
-        console.log(code);
-        if (!code) {
-            showAlertModal('提示', '请先上传图片进行识别！');
-            return;
-        }
+    const sendMessage = async (message) => {
+        chatSendBtn.disabled = true;
+        clearChatBtn.disabled = true;
+        aiAnalyzeSession.innerHTML += `<div class="mb-2"><strong>用户:</strong> ${message}</div>`; 
 
-        aiAnalyzeResult.textContent = '正在分析...';
+        const aiAnalyzeResult = document.createElement('div');
+        aiAnalyzeResult.classList.add('mb-2');
+        aiAnalyzeResult.innerHTML = '<p>正在分析，请稍候...</p>';
+        aiAnalyzeSession.appendChild(aiAnalyzeResult);
 
-        fetch(aiAnalyzePath, {
+        await fetch(aiAnalyzePath, {
             method: 'POST',
             headers: {'Content-Type': 'application/json' },
-            body: JSON.stringify({'message': `${code}$这个公式有什么用?`})
+            body: JSON.stringify({'message': message + "。请用150字以内的篇幅回答。"})
         })
         .then(async response => {
             const data = await response.json();
@@ -300,23 +296,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 showAlertModal('提示', '分析失败：服务器错误。');
                 return;
             }
-            aiAnalyzeResult.textContent = data.response;
+            const raw = data.response;
+            // const raw = "This is a test message. \\(s=\\frac{at^2}{2}\\)  \\$\\frac{1}{2}x^2+\\frac{1}{2}y^2=\\frac{1}{2}z^2\\$  $$\\frac{1}{2}x^2+\\frac{1}{2}y^2=\\frac{1}{2}z^2$$"
+            console.log(raw);
+            const text = raw.replace(/\$\$(.*?)\$\$/g, '\\\\[$1\\\\]').replace(/\\\((.*?)\\\)/g, '\\$$$1\\$$');
+            console.log(text);
+            const html = marked.parse(text);
+            console.log(html);
+            // 将 HTML 内容插入到 aiAnalyzeResult 中
+            aiAnalyzeResult.innerHTML = '<strong>AI助手:</strong>' + html;
+
+            MathJax.typeset([aiAnalyzeResult]);
         })
         .catch(error => {
             console.error('网络出错:', error);
             showAlertModal('提示', '网络错误，请检查网络连接或稍后再试。');
         });
+        chatSendBtn.disabled = false;
+        clearChatBtn.disabled = false;
+    }
+
+    document.getElementById('aiAnalyzeButton').addEventListener('click', async function (e) {
+        e.preventDefault();
+        if (aiAnalyzeSession.children.length <= 0) {
+            if (!latexCode.value) {
+                showAlertModal('提示', '请先上传图片进行识别！');
+                return;
+            }
+            sendMessage(`${latexCode.value}这个算式有什么含义？`);
+        }
+        chatFloatWindow.classList.remove('d-none');
+    });
+
+    chatSendBtn.addEventListener('click', async function (e) {
+        e.preventDefault();
+        const message = document.getElementById('chatInput').value.trim();
+        if (!message) {
+            showAlertModal('提示', '请输入消息内容！');
+            return;
+        }
+        sendMessage(message);
+    });
+
+    document.getElementById('closeChatBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        chatFloatWindow.classList.add('d-none');
+    });
+
+    clearChatBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        aiAnalyzeSession.innerHTML = '';
     });
 
     // 橡皮擦切换功能
-    rubberButton.addEventListener('click', function (e) {
+    document.getElementById('toggleRubberButton').addEventListener('click', function (e) {
         e.preventDefault();
-        isRubber = !isRubber;
+        let icon = document.getElementById('toggleRubberButton').querySelector('i');
         if (isRubber) {
-            rubberButton.style.backgroundColor = '#000000';
+            icon.className = 'fa fa-pencil';
         } else {
-            rubberButton.style.backgroundColor = '#ffffff';
+            icon.className = 'fa fa-eraser';
         }
+        isRubber = !isRubber;
     });
 
     clearCanvasButton.addEventListener('click', function (e) {
@@ -325,19 +366,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     });
 
-    document.getElementById('penWidth4pxButton').addEventListener('click', function (e) {
-        e.preventDefault();
-        penWidth = 4;
-    });
-
-    document.getElementById('penWidth8pxButton').addEventListener('click', function (e) {
-        e.preventDefault();
-        penWidth = 8;
-    });
-
-    document.getElementById('penWidth12pxButton').addEventListener('click', function (e) {
-        e.preventDefault();
-        penWidth = 12;
+    document.getElementById('penWidthSlider').addEventListener('input', function() {
+        penWidth = this.value;
+        document.getElementById('penWidthValue').textContent = penWidth + 'PX';
     });
 
     function isCanvasBlank(canvas) {
@@ -370,70 +401,57 @@ document.addEventListener('DOMContentLoaded', () => {
         previewImage.classList.remove('d-none');
     });
 
-    function getPosition(e) {
-        const rect = canvas.getBoundingClientRect(); // 获取canvas相对于视口的位置
-        let x, y;
-        if (e.touches && e.touches.length) {
-            x = e.touches[0].clientX - rect.left;
-            y = e.touches[0].clientY - rect.top;
-        } else {
-            x = e.clientX - rect.left;
-            y = e.clientY - rect.top;
-        }
-        // 适配屏幕缩放
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        x = (x - window.scrollX) * scaleX;
-        y = (y - window.scrollY) * scaleY;
-        console.log(x, y);
-        return { x, y };
+    const getMousePosition = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;    // device pixel ratio
+        const scaleY = canvas.height / rect.height;  // device pixel ratio
+
+        return {
+            offsetX: (e.clientX - rect.left) * scaleX,
+            offsetY: (e.clientY - rect.top) * scaleY
+        };
     }
 
-    canvas.addEventListener("mousemove", function (e) {
+    const mousemove = (e) => {
         e.preventDefault();
-        if (!penClick) return;
         var ctx = canvas.getContext("2d");
-        const {x, y} = getPosition(e);
-        const stopAxisX = x;
-        const stopAxisY = y;
-        if (isRubber) {
-            // 橡皮擦功能
-            ctx.beginPath();
-            ctx.arc(stopAxisX, stopAxisY, penWidth / 2, 0, Math.PI * 2);
-            ctx.fillStyle = '#ffffff'; // 假设背景色为白色
-            ctx.fill();
-        } else {
-            // 画笔功能
-            ctx.beginPath();
-            ctx.moveTo(startAxisX, startAxisY);
-            ctx.lineTo(stopAxisX, stopAxisY);
+        // 画笔功能
+        const { offsetX, offsetY } = getMousePosition(e);
+        ctx.lineTo(offsetX, offsetY);
+        if (isRubber)
+            ctx.strokeStyle = "#ffffff";
+        else
             ctx.strokeStyle = "#000000";
-            ctx.lineWidth = penWidth;
-            ctx.lineCap = "round";
-            ctx.stroke();
-        }
+        ctx.lineWidth = penWidth;
+        ctx.lineCap = "round";
+        ctx.stroke();
+    }
 
-        startAxisX = stopAxisX;
-        startAxisY = stopAxisY;
-    });
+    const mouseenter = (e) => {
+        // 从外部回到画布，改变上一点的位置，继续书写
+        var ctx = canvas.getContext("2d");
+        const { offsetX, offsetY } = getMousePosition(e);
+        ctx.moveTo(offsetX, offsetY)
+    }
 
+    const mouseup = (e) => {
+        e.preventDefault();
+        var ctx = canvas.getContext("2d");
+        ctx.closePath();
+        canvas.removeEventListener('mousemove', mousemove);
+        document.removeEventListener('mouseup', mouseup);
+        canvas.removeEventListener('mouseenter', mouseenter);
+    }
 
     canvas.addEventListener("mousedown", function (e) {
         e.preventDefault();
-        penClick = true;
-        const {x, y} = getPosition(e);
-        startAxisX = x;
-        startAxisY = y;
-    });
-
-    canvas.addEventListener("mouseup", function (e) {
-        e.preventDefault();
-        penClick = false;
-    });
-
-    canvas.addEventListener("mouseout", function (e) {
-        e.preventDefault();
-        penClick = false;
+        var ctx = canvas.getContext("2d");
+        ctx.beginPath();
+        const { offsetX, offsetY } = getMousePosition(e);
+        ctx.moveTo(offsetX, offsetY);
+        canvas.addEventListener('mousemove', mousemove);
+        document.addEventListener('mouseup', mouseup);
+        canvas.addEventListener('mouseenter', mouseenter);
     });
 
     // 下载图片

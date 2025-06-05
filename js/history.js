@@ -9,10 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 验证是否登录
     if (!token) {
-        showAlertModal('提示', '尚未登录！\n3秒后跳转到登录页面...');
+        showAlertModal('提示', '尚未登录！\n即将跳转到登录页面...');
         setTimeout(() => {
             window.location.href = 'login.html';
-        }, 3000);
+        }, 1000);
         return;
     }
 
@@ -36,10 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(async response => {
             const data = await response.json();
             if (response.status === 401) {
-                showAlertModal('提示', '登录过期，请重新登录！\n跳转到登录页面...');
+                showAlertModal('提示', '登录过期，请重新登录！\n即将跳转到登录页面...');
                 setTimeout(() => {
                     window.location.href = 'login.html';
-                }, 3000);
+                }, 1000);
                 return;
             }
 
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card history-card shadow-sm h-100">
                         <div class="card-body d-flex">
                             <img src="${record.image_url}" alt="公式图像" class="img-thumbnail mr-3"
-                                style="max-width: 100px; max-height: 100px; object-fit: contain;">
+                                style="max-width: 100px; max-height: 100px; object-fit: contain; cursor: pointer;">
                             <div>
                                 <p class="mb-1">ID：${record.id}</p>
                                 <p class="mb-1"><strong>识别时间：</strong>${record.created_at}</p>
@@ -99,6 +99,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     showDeleteModal(recordId);
                 });
             });
+
+            // 添加图片点击预览事件
+            const previewImages = document.querySelectorAll('.history-card img');
+            previewImages.forEach(img => {
+                img.addEventListener('click', () => {
+                    const src = img.getAttribute('src');
+                    const preview = document.getElementById('previewImage');
+                    preview.setAttribute('src', src);
+                    $('#imagePreviewModal').modal('show');
+                });
+            });
+
         })
         .catch(error => {
             historyList.innerHTML = '<p class="text-danger text-center">获取历史记录失败，请稍后再试。</p>';
