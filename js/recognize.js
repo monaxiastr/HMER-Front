@@ -18,9 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveHistoryBtn = document.getElementById('saveHistoryBtn');
     const loginLink = document.getElementById('loginLink');
     const canvas = document.getElementById('canvas');
-    const rubberButton = document.getElementById('rubberButton');
     const clearCanvasButton = document.getElementById('clearCanvasButton');
-    const aiAnalyzeResult = document.getElementById('aiAnalyzeResult');
+    const chatFloatWindow = document.getElementById('chatFloatWindow');
+    const aiAnalyzeSession = document.getElementById('aiAnalyzeSession');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const clearChatBtn = document.getElementById('clearChatBtn');
 
     var pictureFile = null;
     var penWidth = 4;
@@ -273,21 +275,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('aiAnalyzeButton').addEventListener('click', async function (e) {
-        e.preventDefault();
-        const code = latexCode.value;
-        console.log(code);
-        if (!code) {
-            showAlertModal('提示', '请先上传图片进行识别！');
-            return;
-        }
+    const sendMessage = async (message) => {
+        chatSendBtn.disabled = true;
+        clearChatBtn.disabled = true;
+        aiAnalyzeSession.innerHTML += `<div class="mb-2"><strong>用户:</strong> ${message}</div>`; 
 
-        aiAnalyzeResult.textContent = '正在分析...';
+        const aiAnalyzeResult = document.createElement('div');
+        aiAnalyzeResult.classList.add('mb-2');
+        aiAnalyzeResult.innerHTML = '<p>正在分析，请稍候...</p>';
+        aiAnalyzeSession.appendChild(aiAnalyzeResult);
 
-        fetch(aiAnalyzePath, {
+        await fetch(aiAnalyzePath, {
             method: 'POST',
             headers: {'Content-Type': 'application/json' },
-            body: JSON.stringify({'message': `${code}$这个公式有什么用？请用150字以内的篇幅回答`})
+            body: JSON.stringify({'message': message + "。请用150字以内的篇幅回答。"})
         })
         .then(async response => {
             const data = await response.json();
@@ -295,23 +296,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 showAlertModal('提示', '分析失败：服务器错误。');
                 return;
             }
-            aiAnalyzeResult.textContent = data.response;
+            const raw = data.response;
+            // const raw = "This is a test message. \\(s=\\frac{at^2}{2}\\)  \\$\\frac{1}{2}x^2+\\frac{1}{2}y^2=\\frac{1}{2}z^2\\$  $$\\frac{1}{2}x^2+\\frac{1}{2}y^2=\\frac{1}{2}z^2$$"
+            console.log(raw);
+            const text = raw.replace(/\$\$(.*?)\$\$/g, '\\\\[$1\\\\]').replace(/\\\((.*?)\\\)/g, '\\$$$1\\$$');
+            console.log(text);
+            const html = marked.parse(text);
+            console.log(html);
+            // 将 HTML 内容插入到 aiAnalyzeResult 中
+            aiAnalyzeResult.innerHTML = '<strong>AI助手:</strong>' + html;
+
+            MathJax.typeset([aiAnalyzeResult]);
         })
         .catch(error => {
             console.error('网络出错:', error);
             showAlertModal('提示', '网络错误，请检查网络连接或稍后再试。');
         });
+        chatSendBtn.disabled = false;
+        clearChatBtn.disabled = false;
+    }
+
+    document.getElementById('aiAnalyzeButton').addEventListener('click', async function (e) {
+        e.preventDefault();
+        if (aiAnalyzeSession.children.length <= 0) {
+            if (!latexCode.value) {
+                showAlertModal('提示', '请先上传图片进行识别！');
+                return;
+            }
+            sendMessage(`${latexCode.value}这个算式有什么含义？`);
+        }
+        chatFloatWindow.classList.remove('d-none');
+    });
+
+    chatSendBtn.addEventListener('click', async function (e) {
+        e.preventDefault();
+        const message = document.getElementById('chatInput').value.trim();
+        if (!message) {
+            showAlertModal('提示', '请输入消息内容！');
+            return;
+        }
+        sendMessage(message);
+    });
+
+    document.getElementById('closeChatBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        chatFloatWindow.classList.add('d-none');
+    });
+
+    clearChatBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        aiAnalyzeSession.innerHTML = '';
     });
 
     // 橡皮擦切换功能
-    rubberButton.addEventListener('click', function (e) {
+    document.getElementById('toggleRubberButton').addEventListener('click', function (e) {
         e.preventDefault();
-        isRubber = !isRubber;
+        let icon = document.getElementById('toggleRubberButton').querySelector('i');
         if (isRubber) {
-            rubberButton.style.backgroundColor = '#000000';
+            icon.className = 'fa fa-pencil';
         } else {
-            rubberButton.style.backgroundColor = '#ffffff';
+            icon.className = 'fa fa-eraser';
         }
+        isRubber = !isRubber;
     });
 
     clearCanvasButton.addEventListener('click', function (e) {
@@ -320,20 +366,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     });
 
-    document.getElementById('penWidth4pxButton').addEventListener('click', function (e) {
-        e.preventDefault();
-        penWidth = 4;
+    document.getElementById('penWidthSlider').addEventListener('input', function() {
+        penWidth = this.value;
+        document.getElementById('penWidthValue').textContent = penWidth + 'PX';
     });
 
-    document.getElementById('penWidth8pxButton').addEventListener('click', function (e) {
-        e.preventDefault();
-        penWidth = 8;
-    });
-
-    document.getElementById('penWidth12pxButton').addEventListener('click', function (e) {
-        e.preventDefault();
-        penWidth = 12;
-    });
 
     function isCanvasBlank(canvas) {
         var blank = document.createElement('canvas');

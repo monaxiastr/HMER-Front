@@ -119,14 +119,13 @@
                         <div class="card-header text-white text-center" style="background-color: #ecb903;">手写绘制板</div>
                         <canvas id="canvas" style="border: 1px solid #000000;">浏览器不支持canvas</canvas>
                         <div class="row justify-content-center" style="margin-top: 10px;">
-                            <button class="btn btn-outline-secondary" id="rubberButton">橡皮擦</button>
+                            <button class="btn btn-outline-secondary" id="toggleRubberButton"><i class="fa fa-pencil"></i></button>
                             <button class="btn btn-outline-secondary" id="clearCanvasButton">清除</button>
                         </div>
                         <div class="row justify-content-center" style="margin-top: 10px;">
-                            <p>选择画笔大小：</p>
-                            <button class="btn" id="penWidth4pxButton">4PX</button>
-                            <button class="btn" id="penWidth8pxButton">8PX</button>
-                            <button class="btn" id="penWidth12pxButton">12PX</button>
+                            <p>画笔/橡皮擦大小：</p>
+                            <input type="range" id="penWidthSlider" min="4" max="12" step="1" value="4" class="form-range">
+                            <p id="penWidthValue">4PX</p>
                         </div>
                         <div class="row justify-content-center" style="margin-top: 10px;">
                             <p>输出画板内容到下面的图片：</p>
@@ -178,18 +177,7 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- AI 分析结果 -->
-                    <div class="card border-1 shadow-sm mb-4"
-                        style="background-color: #ffffff; margin-top: 30px; margin-bottom: 80px;">
-                        <div class="card-header text-white text-center" style="background-color: #ecb903;">AI分析结果</div>
-                        <div class="card-body" style="text-align: right;">
-                            <div id="aiAnalyzeResult" class="fs-4 text-center text-dark py-3"
-                                style="min-height: 100px; border: 1px dashed #000000; border-radius: 8px; font-size: x-large;"></div>
-                        </div>
-                    </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -216,6 +204,24 @@
     </div>
     <!-- ##### Alert Modal End ##### -->
 
+    <!-- ##### Chat Modal Start ##### -->
+    <div class="card border-1 shadow-sm d-none" id="chatFloatWindow" style="position: fixed; bottom: 50px; right: 50px;
+        z-index: 9999; width: 40vw;">
+        <div class="modal-header" style="background-color: #ecb903;">
+            <h5 class="modal-title text-white" id="chatModalLabel">AI算式分析</h5>
+        </div>
+        <div class="modal-body" id="aiAnalyzeSession">
+            <!-- 这里可以放置对话内容 -->
+        </div>
+        <div class="modal-footer" style="display:inline-flex">
+            <input type="text" class="form-control" id="chatInput" placeholder="输入你的问题...">
+            <button class="btn btn-primary mt-2" id="chatSendBtn" style="margin-left: 10px;">发送</button>
+            <button class="btn btn-primary mt-2" id="clearChatBtn" style="margin-left: 10px;">清空对话</button>
+            <button class="btn btn-primary mt-2" id="closeChatBtn" style="margin-left: 10px;" data-bs-dismiss="modal" aria-label="Close">关闭</button>
+        </div>
+    </div>
+    <!-- ##### Chat Modal End ##### -->
+
     <!-- ##### Footer Area Start ##### -->
     <footer class="footer-area">
         <!-- Bottom Footer Area -->
@@ -233,6 +239,12 @@
     </footer>
     <!-- ##### Footer Area End ##### -->
 
+    <script>
+        MathJax = {
+            tex: {inlineMath: [['$', '$']]}
+        };
+    </script>
+
     <!-- ##### All Javascript Script ##### -->
     <!-- jQuery-2.2.4 js -->
     <script src="js/jquery/jquery-2.2.4.min.js"></script>
@@ -248,6 +260,8 @@
     <script src="js/mathjax/es5/tex-svg.js"></script>
     <!-- Canvg js -->
     <script src="js/canvg/umd.min.js"></script>
+    <!-- Marked js -->
+    <script src="js/marked/marked.min.js"></script>
 
     <!-- Tools js -->
     <script src="js/tools.js"></script>
