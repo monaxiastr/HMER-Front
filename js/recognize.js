@@ -35,6 +35,34 @@ document.addEventListener('DOMContentLoaded', () => {
         loginLink.href = 'profile.html';
     }
 
+    console.image = function (url, scale) {
+        const img = new Image()
+        img.onload = () => {
+            const c = document.createElement('canvas')
+            const ctx = c.getContext('2d')
+            if (ctx) {
+                c.width = img.width
+                c.height = img.height
+                ctx.fillStyle = "red";
+                ctx.fillRect(0, 0, c.width, c.height);
+                ctx.drawImage(img, 0, 0)
+                const dataUri = c.toDataURL('image/png')
+
+                console.log(`%c sup?` ,
+                    `
+                    font-size: 1px;
+                    padding: ${Math.floor((img.height * scale) / 2)}px ${Math.floor((img.width * scale) / 2)}px;
+                    background-image: url(${dataUri});
+                    background-repeat: no-repeat;
+                    background-size: ${img.width * scale}px ${img.height * scale}px;
+                    color: transparent;
+                    `
+                )
+            }
+        }
+        img.src = url
+    }
+
     // 图片预览功能
     imageInput.addEventListener('change', function (e) {
         pictureFile = e.target.files[0];
@@ -92,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showAlertModal('提示', '请先上传图片/在手写板中绘制公式！');
             return;
         }
-        console.log(pictureFile);
+        console.image(URL.createObjectURL(pictureFile), 0.5);
 
         const token = localStorage.getItem('token');
         if (!token) {
@@ -386,19 +414,45 @@ document.addEventListener('DOMContentLoaded', () => {
             showAlertModal('提示', '请在画布上绘制公式！');
             return;
         }
+        
+        // 避免透明部分
+        const context = canvas.getContext('2d');
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            // 检查是否为空白像素（假设空白像素是完全透明的）
+            if (data[i + 3] === 0) { // alpha通道为0表示透明
+                data[i] = 255;     // R
+                data[i + 1] = 255; // G
+                data[i + 2] = 255; // B
+                data[i + 3] = 255; // A
+            }
+        }
+
+        // 将修改后的图像数据重新绘制到画布上
+        context.putImageData(imageData, 0, 0);
+
         // 将 canvas 内容转换为数据URL
         const dataURL = canvas.toDataURL('image/png');
 
-        // 使用 fetch 从数据URL下载图像数据
-        const response = await fetch(dataURL);
-        const blob = await response.blob();
+        const byteString = atob(dataURL.split(',')[1]);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
 
         // 创建 File 对象
-        pictureFile = new File([blob], 'created_image.png', { type: 'image/png' });
+        pictureFile = new File([new Blob([ab], { type: 'image/png' })], 'created_image.png', { type: 'image/png' });
 
-        // 可选：将创建的图像显示在预览区域
-        previewImage.src = dataURL;
-        previewImage.classList.remove('d-none');
+        // 将创建的图像显示在预览区域
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImage.src = e.target.result;
+            previewImage.classList.remove('d-none');
+        };
+        reader.readAsDataURL(pictureFile);
     });
 
     const getMousePosition = (e) => {
