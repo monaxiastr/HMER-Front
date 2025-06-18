@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const recognizePath = basePath + '/api/recognize';
     const verifyLatexPath = basePath + '/api/verify-latex';
     const saveHistoryPath = basePath + '/api/save-recognition';
+    const calculatePath = basePath + '/api/calculate-latex';
     const aiAnalyzePath = basePath + '/api/chat';
 
     const imageInput = document.getElementById('imageUpload');
@@ -343,6 +344,35 @@ document.addEventListener('DOMContentLoaded', () => {
         chatSendBtn.disabled = false;
         clearChatBtn.disabled = false;
     }
+    
+    document.getElementById('calculateButton').addEventListener('click', async function (e) {
+        e.preventDefault();
+        if (!latexCode.value) {
+            showAlertModal('提示', '请先上传图片进行识别！');
+            return;
+        }
+        await fetch(calculatePath, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json' },
+            body: JSON.stringify({'latex': latexCode.value.replace('\\', '\\\\')})
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+                showAlertModal('提示', '分析失败：服务器错误。');
+                return;
+            }
+            if (data.calculable === false) {
+                showAlertModal('提示', `无法计算: ${data.error}`);
+                return;
+            }
+            showAlertModal('提示', `计算结果: ${data.result}`);
+        })
+        .catch(error => {
+            console.error('网络出错:', error);
+            showAlertModal('提示', '网络错误，请检查网络连接或稍后再试。');
+        });
+    });
 
     document.getElementById('aiAnalyzeButton').addEventListener('click', async function (e) {
         e.preventDefault();
