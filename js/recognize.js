@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetch(calculatePath, {
             method: 'POST',
             headers: {'Content-Type': 'application/json' },
-            body: JSON.stringify({'latex': latexCode.value.replace('\\', '\\\\')})
+            body: JSON.stringify({'latex': latexCode.value})
         })
         .then(async response => {
             const data = await response.json();
