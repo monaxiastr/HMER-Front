@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const basePath = 'http://localhost:5000';
+    const basePath = 'https://hmer.recitewords.cn';
     const recognizePath = basePath + '/api/recognize';
     const verifyLatexPath = basePath + '/api/verify-latex';
     const saveHistoryPath = basePath + '/api/save-recognition';
