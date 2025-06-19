@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (response.ok) {
                 showAlertModal('提示', '注册成功！即将跳转...');
                 setTimeout(() => {
-                    window.location.href = '/login.html';
+                    window.location.href = 'login.html';
                 }, 1000);
             } else {
                 showAlertModal('提示', '注册失败，用户名已存在！');

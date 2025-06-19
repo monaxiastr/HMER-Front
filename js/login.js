@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('username', data.user.username);
                 localStorage.setItem('email', data.user.email);
                 setTimeout(() => {
-                    window.location.href = '/recognize.html';
+                    window.location.href = 'recognize.html';
                 }, 1000);
             } else {
                 showAlertModal('提示', '登录失败：用户名或密码错误');
