@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const basePath = 'http://localhost:5000';
+    const basePath = 'https://hmer.recitewords.cn';
     const historyPath = basePath + '/api/history';
 
     const loginLink = document.getElementById('loginLink');

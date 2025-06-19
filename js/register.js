@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const basePath = 'http://localhost:5000';
+    const basePath = 'https://hmer.recitewords.cn';
     const form = document.getElementById('registerForm');
 
     form.addEventListener('submit', function (e) {

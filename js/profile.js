@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const basePath = 'http://localhost:5000';
+    const basePath = 'https://hmer.recitewords.cn';
     const changePwdPath = basePath + '/api/change-password';
 
     const loginLink = document.getElementById('loginLink');

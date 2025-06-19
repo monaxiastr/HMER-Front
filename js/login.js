@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const basePath = 'http://localhost:5000';
+    const basePath = 'https://hmer.recitewords.cn';
     const form = document.getElementById('loginForm');
 
     form.addEventListener('submit', function (e) {
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('username', data.user.username);
                 localStorage.setItem('email', data.user.email);
                 setTimeout(() => {
-                    window.location.href = '/recognize.html';
+                    window.location.href = 'recognize.html';
                 }, 1000);
             } else {
                 showAlertModal('提示', '登录失败：用户名或密码错误');
