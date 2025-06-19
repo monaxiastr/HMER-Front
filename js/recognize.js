@@ -29,6 +29,36 @@ document.addEventListener('DOMContentLoaded', () => {
     var penWidth = 4;
     var isRubber = false;
 
+    // 在HTML的<head>中添加样式
+    const style = document.createElement('style');
+    style.textContent = `
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    `;
+    document.head.appendChild(style);
+    
     // 顶部导航栏信息
     const username = localStorage.getItem('username');
     if (username) {
@@ -132,6 +162,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // 创建加载蒙版
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = '<div class="loading-spinner"></div>';
+        document.body.appendChild(overlay);
+
         const formData = new FormData();
         formData.append('file', pictureFile);
 
@@ -219,6 +255,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('网络出错:', error);
             showAlertModal('提示', '网络错误，请检查网络连接或稍后再试。');
+        })
+        .finally (() => {
+            overlay.remove();
         });
 
     });
